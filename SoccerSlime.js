@@ -12,9 +12,9 @@ size = {
 
 speed = {
 	slime: 300,//360,//px/s
-	jump: 650,//780,//px/s
+	jump: 325,//780,//px/s
 	ballMaxSpeed: 750,//900,//px/s
-	gravity: 2500//3600 //px/s^2
+	gravity: 1250//3600 //px/s^2
 }
 
 direction = {
@@ -178,7 +178,7 @@ function updateBall(d) {
 
 	//gravity and boundary check
 	if (by + size.ballRadius < size.height - size.groundHeight) {
-		ball.vy += speed.gravity * d / 1000 / 2;
+		ball.vy += speed.gravity * d / 1000;
 	} else {
 		by = size.height - size.groundHeight - size.ballRadius;
 		ball.vy = - ball.vy / 2;
@@ -202,12 +202,25 @@ function updateBall(d) {
 		if (Math.sqrt( Math.pow(slimes[i].getX() - bx, 2) + Math.pow(slimes[i].getY() - by, 2) ) < size.slimeRadius + size.ballRadius && by < slimes[i].getY()) {
 			//move ball outside of slime
 			var ang2 = Math.atan2(by - slimes[i].getY(), bx - slimes[i].getX());
-			bx = slimes[i].getX() + (size.slimeRadius + size.ballRadius) * Math.cos(ang2);
-			by = slimes[i].getY() + (size.slimeRadius + size.ballRadius) * Math.sin(ang2);
-			ball.vx = v * -Math.cos(2 * ang2 - ang + 2 * Math.PI);
-			ball.vy = v * Math.sin(2 * ang2 - ang + 2 * Math.PI) + Math.min(0, slimes[i].vy) * 2;
+			var b = (bx - slimes[i].getX()) * Math.cos(-ang) + (by - slimes[i].getY()) * Math.sin(-ang);
+			var c = - Math.pow(size.slimeRadius + size.ballRadius, 2) + Math.pow(bx, 2) - bx * slimes[i].getX() + Math.pow(slimes[i].getX(), 2) + Math.pow(by, 2) - by * slimes[i].getY() + Math.pow(slimes[i].getY(), 2);
+			var dis = Math.pow(b, 2) - 4 * c;
+			if (dis >= 0) {
+				var l = (-b + Math.sqrt(dis)) / 2;
+				bx = bx + l * cos(-ang);
+				by = by + l * sin(-ang);
+			} else {
+				bx = slimes[i].getX() + (size.slimeRadius + size.ballRadius) * Math.cos(ang2);
+				by = slimes[i].getY() + (size.slimeRadius + size.ballRadius) * Math.sin(ang2);
+			}
+
+			//update ang2
+			ang2 = Math.atan2(by - slimes[i].getY(), bx - slimes[i].getX());
+
+			ball.vx = v * Math.cos(2 * ang2 - ang + Math.PI);
+			ball.vy = v * Math.sin(2 * ang2 - ang +Math.PI) - Math.sin(ang2) * Math.min(0, slimes[i].vy);
 			if ((bx > slimes[i].getX() && slimes[i].vx > 0) || (bx < slimes[i].getX() && slimes[i].vx < 0))
-				ball.vx += slimes[i].vx;
+				ball.vx += Math.abs(Math.cos(ang2)) * slimes[i].vx;
 			if (bx < size.ballRadius) {
 				bx = size.ballRadius + (size.ballRadius - bx) / 2;
 				ball.vx = - ball.vx / 2;
