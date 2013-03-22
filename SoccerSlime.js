@@ -218,7 +218,7 @@ function updateBall(d) {
 			ang2 = Math.atan2(by - slimes[i].getY(), bx - slimes[i].getX());
 
 			ball.vx = v * Math.cos(2 * ang2 - ang + Math.PI);
-			ball.vy = v * Math.sin(2 * ang2 - ang +Math.PI) - Math.sin(ang2) * Math.min(0, slimes[i].vy);
+			ball.vy = v * Math.sin(2 * ang2 - ang +Math.PI) - Math.sin(ang2) * 2 * Math.min(0, slimes[i].vy);
 			if ((bx > slimes[i].getX() && slimes[i].vx > 0) || (bx < slimes[i].getX() && slimes[i].vx < 0))
 				ball.vx += Math.abs(Math.cos(ang2)) * slimes[i].vx;
 			if (bx < size.ballRadius) {
