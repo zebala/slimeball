@@ -56,10 +56,11 @@ drawShapes = {
 }
 
 
-//GLOBAL VARAIBLES
+//GLOBAL VARIABLES
 var slimes = new Array();
 var players = 2;
 var ball;
+var goals = new Array();
 
 //KEYS
 var keyStatus = new Object();
@@ -105,6 +106,12 @@ function init() {
 	}
 }
 
+function masterInit() {
+	init();
+	goals[0] = 0;
+	goals[1] = 0;
+}
+
 function updateGame(frame) {
 	var d = frame.timeDiff;
 	var time = frame.time;
@@ -112,7 +119,8 @@ function updateGame(frame) {
 	// UPDATE GAME
 	updateSlimes(d);
 	updateBall(d);
-
+	checkGoal();
+	
 }
 
 function updateSlimes(d) {
@@ -232,8 +240,17 @@ function updateBall(d) {
 		}
 	}
 	ball.setPosition(bx, by);
+}
 
-
+function checkGoal() {
+	if ((ball.getX() < size.goalWidth) && (ball.getY() > (size.height - 2 * size.groundHeight))) {
+		goals[1] += 1;
+		init();
+	}
+	if ((ball.getX() > (size.width - size.goalWidth)) && (ball.getY() > (size.height - 2 * size.groundHeight))) {
+		goals[0] += 1;
+		init();
+	}
 }
 
 //BEGINNING
@@ -250,15 +267,17 @@ $("document").ready( function() {
 	//LAYERS
 	var backgroundLayer = new Kinetic.Layer();
 	var gameLayer = new Kinetic.Layer();
+	var goalLayer = new Kinetic.Layer();
 
 	backgroundLayer.name = "background";
 	gameLayer.name = "game";
+	goalLayer.name = "goals";
 
 	//DRAW BACKGROUND
 	backgroundLayer.add(
 		new Kinetic.Rect({
 			x: 0,
-			y:0,
+			y: 0,
 			width: size.width,
 			height: size.height,
 			fillLinearGradientStartPoint: [0,0],
@@ -269,6 +288,49 @@ $("document").ready( function() {
 											1, 'green']
 		})
 	);
+
+	//DRAW GOALS
+	var goal1 = new Kinetic.Shape({
+		drawFunc: function(){
+			var context = this.getContext();
+			context.beginPath();
+			//draw vertical lines
+			for (var x = 0.5; x <= size.goalWidth + 0.5; x += 5) {
+				context.moveTo(x, (size.height - 2 * size.goalHeight));
+				context.lineTo(x, (size.height - size.goalHeight));
+			}
+			//draw horizontal lines
+			for (var y = (size.height - 2 * size.goalHeight); y <= size.height - size.goalHeight; y += 5) {
+	  			context.moveTo(0.5, y);
+	  			context.lineTo(size.goalWidth + 0.5, y);
+			}
+			context.strokeStyle = "white";
+			context.lineWidth = 1;
+			context.stroke();
+		}
+	});
+	var goal2 = new Kinetic.Shape({
+		drawFunc: function(){
+			var context = this.getContext();
+			context.beginPath();
+			//draw vertical lines
+			for (var x = size.width - size.goalWidth - 0.5; x <= size.width + 0.5; x += 5) {
+				context.moveTo(x, (size.height - 2 * size.goalHeight));
+				context.lineTo(x, (size.height - size.goalHeight));
+			}
+			//draw horizontal lines
+			for (var y = (size.height - 2 * size.goalHeight); y <= size.height - size.goalHeight; y += 5) {
+	  			context.moveTo(size.width - size.goalWidth - 0.5, y);
+	  			context.lineTo(size.width - +.5, y);
+			}
+			context.strokeStyle = "white";
+			context.lineWidth = 1;
+			context.stroke();
+		}
+	});
+	
+	goalLayer.add(goal1);
+	goalLayer.add(goal2);
 
 	//ADD BALL
 	ball = new Kinetic.Circle({
@@ -307,6 +369,7 @@ $("document").ready( function() {
 
 	stage.add(backgroundLayer);
 	stage.add(gameLayer);
+	stage.add(goalLayer);
 
 	window.addEventListener('keydown', function(event){keyDown(event.keyCode)}, false);
 	window.addEventListener('keyup', function(event){keyUp(event.keyCode)}, false);	
