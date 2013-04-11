@@ -22,6 +22,15 @@ direction = {
 	right : 1
 }
 
+mode = {
+	menu: 0,
+	game: 1,
+	goal: 2,
+	continueGame: 3,
+	gameOver: 4,
+	test: 5
+}
+
 drawShapes = {
 	drawSlime : function() {
 		var context = this.getContext();
@@ -61,6 +70,7 @@ var slimes = new Array();
 var players = 2;
 var ball;
 var goals = new Array();
+var gameMode = mode.game;
 
 //KEYS
 var keyStatus = new Object();
@@ -117,40 +127,62 @@ function updateGame(frame) {
 	var time = frame.time;
 
 	// UPDATE GAME
-	updateSlimes(d);
-	updateBall(d);
-	checkGoal();
-	
+	switch(gameMode) {
+		case mode.menu:
+			gameMode = mode.game;
+			break;
+		case mode.game:
+			updateSlimes(d);
+			updateBall(d);
+			//checkGoal();
+			break;
+		case mode.goal:
+			updateSlimes(d);
+			updateBall(d);
+			break;
+		case mode.continueGame:
+			gameMode = mode.game;
+			break;
+		case mode.gameOver:	
+			
+			break;
+		case mode.test:
+			updateSlimes(d);
+			updateBall(d);
+			break;	
+	}
 }
 
 function updateSlimes(d) {
 	for (var i = 0; i < players; i++) {
 		//check keys and update velocities
 		slimes[i].vx = 0;
-		if (i === 0) {
-			if (isDown("a")) {
-				slimes[i].vx = -speed.slime;
-				slimes[i].direction = direction.left;
+		if (gameMode === mode.game || game.Mode === mode.test) {
+			if (i === 0) {
+				if (isDown("a")) {
+					slimes[i].vx = -speed.slime;
+					slimes[i].direction = direction.left;
+				}
+				if (isDown("d")) {
+					slimes[i].vx = speed.slime;
+					slimes[i].direction = direction.right;
+				}
+				if (isDown("w") && slimes[i].getY() === size.height - size.groundHeight) {
+					slimes[i].vy = -speed.jump;
+				}
 			}
-			if (isDown("d")) {
-				slimes[i].vx = speed.slime;
-				slimes[i].direction = direction.right;
-			}
-			if (isDown("w") && slimes[i].getY() === size.height - size.groundHeight) {
-				slimes[i].vy = -speed.jump;
-			}
-		}
-		if (i === 1) {
-			if (isDown("left")) {
-				slimes[i].vx = -speed.slime;
-				slimes[i].direction = direction.left;
-			}
-			if (isDown("right")) {
-				slimes[i].vx = speed.slime;
-				slimes[i].direction = direction.right;
-			}
-			if (isDown("up") && slimes[i].getY() === size.height - size.groundHeight) {
-				slimes[i].vy = -speed.jump;
+			if (i === 1) {
+				if (isDown("left")) {
+					slimes[i].vx = -speed.slime;
+					slimes[i].direction = direction.left;
+				}
+				if (isDown("right")) {
+					slimes[i].vx = speed.slime;
+					slimes[i].direction = direction.right;
+				}
+				if (isDown("up") && slimes[i].getY() === size.height - size.groundHeight) {
+					slimes[i].vy = -speed.jump;
+				}
 			}
 		}
 
@@ -171,6 +203,8 @@ function updateSlimes(d) {
 function updateBall(d) {
 	var bx = ball.getX();
 	var by = ball.getY();
+	var old_bx = bx;
+	var old_by = by;
 
 	//direction of the ball
 	var ang = Math.atan2(ball.vy, ball.vx);
@@ -204,7 +238,7 @@ function updateBall(d) {
 	//collision with slimes
 	for (var i = 0; i < players; i++) {
 		ang = Math.atan2(ball.vy, ball.vx);
-		v = Math.min( Math.sqrt( Math.pow(ball.vx, 2) + Math.pow(ball.vy, 2) ), speed.ballMaxSpeed) * Math.pow(0.9, d / 1000);
+		v = Math.min( Math.sqrt( Math.pow(ball.vx, 2) + Math.pow(ball.vy, 2) ), speed.ballMaxSpeed);
 
 		
 		if (Math.sqrt( Math.pow(slimes[i].getX() - bx, 2) + Math.pow(slimes[i].getY() - by, 2) ) < size.slimeRadius + size.ballRadius && by < slimes[i].getY()) {
@@ -239,17 +273,49 @@ function updateBall(d) {
 			}
 		}
 	}
+	
+	//collision with goal
+	if (	
+			by + size.ballRadius > size.height - size.groundHeight - size.goalHeight && 			old_by + size.ballRadius <= size.height - size.groundHeight - size.goalHeight &&
+	 		(bx < size.goalWidth || bx > size.width - size.goalWidth)
+	 	) {
+	 	by = size.height - size.groundHeight - size.goalHeight - size.ballRadius;
+		ball.vy = - ball.vy / 2;
+		ball.vx += (bx < size.width/2 ? 1: -1)* 5 * d / 1000;
+	}
+	if (	
+			by - size.ballRadius < size.height - size.groundHeight - size.goalHeight && 			old_by - size.ballRadius >= size.height - size.groundHeight - size.goalHeight &&
+	 		(bx < size.goalWidth || bx > size.width - size.goalWidth)
+	 	) {
+	 	by = size.height - size.groundHeight - size.goalHeight + size.ballRadius;
+		ball.vy = - ball.vy / 2;
+	}
+	//collision with goal bar
+	//TODO: improve
+	if (Math.sqrt( Math.pow(size.goalWidth - bx, 2) + Math.pow(size.height - size.groundHeight - size.goalHeight - by, 2)) <= size.ballRadius) {
+		var ang = Math.atan2(ball.vy, ball.vx);
+		ball.vx = Math.abs(ball.vx);
+		ball.vy *= -1;
+	}
+	if (Math.sqrt( Math.pow(size.width - size.goalWidth - bx, 2) + Math.pow(size.height - size.groundHeight - size.goalHeight - by, 2)) <= size.ballRadius) {
+		var ang = Math.atan2(ball.vy, ball.vx);
+		ball.vx = - Math.abs(ball.vx);
+		ball.vy *= -1;
+	}
+	
 	ball.setPosition(bx, by);
 }
 
 function checkGoal() {
 	if ((ball.getX() < size.goalWidth) && (ball.getY() > (size.height - 2 * size.groundHeight))) {
 		goals[1] += 1;
-		init();
+		gameMode = mode.goal;
+		setTimeout(function(){init(); gameMode = mode.continueGame},1500);
 	}
 	if ((ball.getX() > (size.width - size.goalWidth)) && (ball.getY() > (size.height - 2 * size.groundHeight))) {
 		goals[0] += 1;
-		init();
+		gameMode = mode.goal;
+		setTimeout(function(){init(); gameMode = mode.continueGame},1500);
 	}
 }
 
@@ -300,7 +366,7 @@ $("document").ready( function() {
 				context.lineTo(x, (size.height - size.goalHeight));
 			}
 			//draw horizontal lines
-			for (var y = (size.height - 2 * size.goalHeight); y <= size.height - size.goalHeight; y += 5) {
+			for (var y = (size.height - 2 * size.goalHeight - 0.5); y <= size.height - size.goalHeight; y += 5) {
 	  			context.moveTo(0.5, y);
 	  			context.lineTo(size.goalWidth + 0.5, y);
 			}
@@ -319,9 +385,9 @@ $("document").ready( function() {
 				context.lineTo(x, (size.height - size.goalHeight));
 			}
 			//draw horizontal lines
-			for (var y = (size.height - 2 * size.goalHeight); y <= size.height - size.goalHeight; y += 5) {
+			for (var y = (size.height - 2 * size.goalHeight - 0.5); y <= size.height - size.goalHeight; y += 5) {
 	  			context.moveTo(size.width - size.goalWidth - 0.5, y);
-	  			context.lineTo(size.width - +.5, y);
+	  			context.lineTo(size.width - + 0.5, y);
 			}
 			context.strokeStyle = "white";
 			context.lineWidth = 1;
@@ -340,7 +406,8 @@ $("document").ready( function() {
 		fillRadialGradientStartRadius: size.ballRadius / 10,
 		fillRadialGradientEndRadius: size.ballRadius,
 		fillRadialGradientColorStops: [	0, 'yellow',
-										1, '#FFCC00']
+										1, '#FFCC00'],
+		draggable: true
 	});
 	ball.vx = 0;
 	ball.vy = 0;
