@@ -67,6 +67,7 @@ drawShapes = {
 
 //GLOBAL VARIABLES
 var stage;
+var menyLayer;
 var continueLayer;
 
 var players = 2;
@@ -147,7 +148,9 @@ function updateGame(frame) {
 	// UPDATE GAME
 	switch(gameMode) {
 		case mode.menu:
-			setModeToContinue();
+			if (isHit("space")) {
+				setModeToContinue();
+			}
 			break;
 		case mode.game:
 			updateSlimes(d);
@@ -342,6 +345,14 @@ function checkGoal() {
 	}
 }
 
+function setModeToMenu() {
+	gameMode = mode.menu;
+	init();
+	menuLayer.setVisible(true);
+	continueLayer.setVisible(true);
+	stage.draw();
+}
+
 function setModeToGoal() {
 	gameMode = mode.goal;
 }
@@ -349,12 +360,14 @@ function setModeToGoal() {
 function setModeToContinue() {
 	gameMode = mode.continueGame;
 	init()
+	menuLayer.setVisible(false);
 	continueLayer.setVisible(true);
-	stage.draw();														// refresh the layers
+	stage.draw();					// refresh the layers
 }
 
 function setModeToGame() {
 	gameMode = mode.game;
+	menuLayer.setVisible(false);
 	continueLayer.setVisible(false);
 	//stage.draw();
 }
@@ -375,14 +388,17 @@ $("document").ready( function() {
 	var gameLayer = new Kinetic.Layer();
 	var goalLayer = new Kinetic.Layer();
 	var jumboTronLayer = new Kinetic.Layer();
+	menuLayer = new Kinetic.Layer();
 	continueLayer = new Kinetic.Layer();
 
+	/* NOT USED
 	backgroundLayer.setId("background");
 	gameLayer.setId("game");
 	goalLayer.setId("goals");
 	jumboTronLayer.setId("jumboTron");
+	menuLayer.setId("menu");
 	continueLayer.setId("continue");
-	
+	*/
 
 	//DRAW BACKGROUND
 	backgroundLayer.add(
@@ -507,6 +523,23 @@ $("document").ready( function() {
 		jumboTronLayer.add(teamName[i]);
 	}
 
+	menuLayer.add( new Kinetic.Text({
+		x: 0,
+		y: size.height / 2 - 40,
+		fontSize: 85,
+		fontFamily: 'Impact',
+		width: size.width,
+		text: "HTML5 Soccer Slime",
+		fill: 'white',
+		align: 'center',
+		// stroke: 'black',
+        // strokeWidth: 2,
+        shadowColor: 'black',
+        shadowBlur: 0.1,
+        shadowOffset: 7,
+        shadowOpacity: 0.9
+	}));
+
 	continueLayer.add( new Kinetic.Text({
 		x: 0,
 		y: size.height - size.groundHeight - 40,
@@ -518,14 +551,15 @@ $("document").ready( function() {
 		align: 'center'
 	}));
 
-	continueLayer.setVisible(false);
-	
+	setModeToMenu();
+
 	init();
 
 	stage.add(backgroundLayer);
 	stage.add(gameLayer);
 	stage.add(goalLayer);
 	stage.add(jumboTronLayer);
+	stage.add(menuLayer);
 	stage.add(continueLayer);
 
 	window.addEventListener('keydown', function(event){keyDown(event.keyCode)}, false);
