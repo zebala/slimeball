@@ -82,6 +82,7 @@ var gameMode = mode.menu;
 
 //KEYS
 var keyStatus = new Object();
+var keyHitStatus = new Object();
 var gameKeys = [ "left", "right" , "up", "space", "w", "a", "d" ];
 var keyMap = { "left" : 37, "right" : 39, "up" : 38 , "space" : 32, "w" : 87, "a" : 65, "d" : 68};
 function checkKey(key) {
@@ -93,16 +94,25 @@ function checkKey(key) {
 }
 function keyDown(key) {
 	if (checkKey(key)) {
+		if (!keyStatus[key]) {
+			keyHitStatus[key] = true;
+		} else {
+			keyHitStatus[key] = false;
+		}
 		keyStatus[key] = true;
 	}
 }
 function keyUp(key) {
 	if (checkKey(key)) {
+		keyHitStatus[key] = false;
 		keyStatus[key] = false;
 	}
 }
 function isDown(keyString) {
 	return keyStatus[keyMap[keyString]];
+}
+function isHit(keyString) {
+	return keyHitStatus[keyMap[keyString]];
 }
 
 
@@ -149,7 +159,7 @@ function updateGame(frame) {
 			updateBall(d);
 			break;
 		case mode.continueGame:
-			if (isDown("space")) {
+			if (isHit("space")) {
 				setModeToGame();
 			}
 			break;
@@ -177,7 +187,7 @@ function updateSlimes(d) {
 					slimes[i].vx = speed.slime;
 					slimes[i].direction = direction.right;
 				}
-				if (isDown("w") && slimes[i].getY() === size.height - size.groundHeight) {
+				if (isHit("w") && slimes[i].getY() === size.height - size.groundHeight) {
 					slimes[i].vy = -speed.jump;
 				}
 			}
@@ -190,7 +200,7 @@ function updateSlimes(d) {
 					slimes[i].vx = speed.slime;
 					slimes[i].direction = direction.right;
 				}
-				if (isDown("up") && slimes[i].getY() === size.height - size.groundHeight) {
+				if (isHit("up") && slimes[i].getY() === size.height - size.groundHeight) {
 					slimes[i].vy = -speed.jump;
 				}
 			}
@@ -340,7 +350,7 @@ function setModeToContinue() {
 	gameMode = mode.continueGame;
 	init()
 	continueLayer.setVisible(true);
-	stage.draw();
+	stage.draw();														// refresh the layers
 }
 
 function setModeToGame() {
@@ -508,7 +518,7 @@ $("document").ready( function() {
 		align: 'center'
 	}));
 
-	// continueLayer.setVisible(false);
+	continueLayer.setVisible(false);
 	
 	init();
 
