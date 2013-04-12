@@ -67,13 +67,17 @@ drawShapes = {
 
 //GLOBAL VARIABLES
 var stage;
+var continueLayer;
+
 var players = 2;
 var slimes;
 var ball;
 var goals = [0,0];
+
 var team1Name = "Kasper";
 var team2Name = "Timi";
 var teamName;
+
 var gameMode = mode.menu;
 
 //KEYS
@@ -133,7 +137,7 @@ function updateGame(frame) {
 	// UPDATE GAME
 	switch(gameMode) {
 		case mode.menu:
-			gameMode = mode.game;
+			setModeToContinue();
 			break;
 		case mode.game:
 			updateSlimes(d);
@@ -145,7 +149,9 @@ function updateGame(frame) {
 			updateBall(d);
 			break;
 		case mode.continueGame:
-			gameMode = mode.game;
+			if (isDown("space")) {
+				setModeToGame();
+			}
 			break;
 		case mode.gameOver:	
 			
@@ -313,23 +319,34 @@ function updateBall(d) {
 function checkGoal() {
 	if ((ball.getX() < size.goalWidth) && (ball.getY() > size.height - size.groundHeight - size.goalHeight)) {
 		teamName[1].setText(team2Name + ": " + ++goals[1]);
-		teamName[1].setX(size.width - 20 - teamName[1].getWidth());
-		stage.draw();
-		gameMode = mode.goal;
-		setTimeout(	function(){	
-						init();
-						gameMode = mode.continueGame}
-					,1500);
+		teamName[1].setX(size.width - 20 - teamName[1].getWidth()); 	//update position
+		stage.draw(); 													// refreshes the layers, including jumboTronLayer
+		setModeToGoal();
+		setTimeout(	function(){setModeToContinue()}, 1500);
 	}
 	if ((ball.getX() > (size.width - size.goalWidth)) && (ball.getY() > size.height - size.groundHeight - size.goalHeight)) {
 		teamName[0].setText(team1Name + ": " + ++goals[0]);
-		stage.draw();
-		gameMode = mode.goal;
-		setTimeout(	function(){	
-						init();
-						gameMode = mode.continueGame}
-					,1500);
+		stage.draw(); 													// refreshes the layers, including jumboTronLayer
+		setModeToGoal();
+		setTimeout(	function(){setModeToContinue()}, 1500);
 	}
+}
+
+function setModeToGoal() {
+	gameMode = mode.goal;
+}
+
+function setModeToContinue() {
+	gameMode = mode.continueGame;
+	init()
+	continueLayer.setVisible(true);
+	stage.draw();
+}
+
+function setModeToGame() {
+	gameMode = mode.game;
+	continueLayer.setVisible(false);
+	//stage.draw();
 }
 
 //BEGINNING
@@ -348,11 +365,13 @@ $("document").ready( function() {
 	var gameLayer = new Kinetic.Layer();
 	var goalLayer = new Kinetic.Layer();
 	var jumboTronLayer = new Kinetic.Layer();
+	continueLayer = new Kinetic.Layer();
 
-	backgroundLayer.name = "background";
-	gameLayer.name = "game";
-	goalLayer.name = "goals";
-	jumboTronLayer.name = "jumboTron";
+	backgroundLayer.setId("background");
+	gameLayer.setId("game");
+	goalLayer.setId("goals");
+	jumboTronLayer.setId("jumboTron");
+	continueLayer.setId("continue");
 	
 
 	//DRAW BACKGROUND
@@ -477,6 +496,19 @@ $("document").ready( function() {
 		}
 		jumboTronLayer.add(teamName[i]);
 	}
+
+	continueLayer.add( new Kinetic.Text({
+		x: 0,
+		y: size.height - size.groundHeight - 40,
+		fontSize: 20,
+		fontFamily: 'Arial',
+		width: size.width,
+		text: "Hit space to continue",
+		fill: 'white',
+		align: 'center'
+	}));
+
+	// continueLayer.setVisible(false);
 	
 	init();
 
@@ -484,6 +516,7 @@ $("document").ready( function() {
 	stage.add(gameLayer);
 	stage.add(goalLayer);
 	stage.add(jumboTronLayer);
+	stage.add(continueLayer);
 
 	window.addEventListener('keydown', function(event){keyDown(event.keyCode)}, false);
 	window.addEventListener('keyup', function(event){keyUp(event.keyCode)}, false);	
