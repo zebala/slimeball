@@ -66,11 +66,15 @@ drawShapes = {
 
 
 //GLOBAL VARIABLES
-var slimes = new Array();
+var stage;
 var players = 2;
+var slimes;
 var ball;
-var goals = new Array();
-var gameMode = mode.game;
+var goals = [0,0];
+var team1Name = "Kasper";
+var team2Name = "Timi";
+var teamName;
+var gameMode = mode.menu;
 
 //KEYS
 var keyStatus = new Object();
@@ -134,7 +138,7 @@ function updateGame(frame) {
 		case mode.game:
 			updateSlimes(d);
 			updateBall(d);
-			//checkGoal();
+			checkGoal();
 			break;
 		case mode.goal:
 			updateSlimes(d);
@@ -157,7 +161,7 @@ function updateSlimes(d) {
 	for (var i = 0; i < players; i++) {
 		//check keys and update velocities
 		slimes[i].vx = 0;
-		if (gameMode === mode.game || game.Mode === mode.test) {
+		if (gameMode === mode.game || gameMode === mode.test) {
 			if (i === 0) {
 				if (isDown("a")) {
 					slimes[i].vx = -speed.slime;
@@ -307,22 +311,31 @@ function updateBall(d) {
 }
 
 function checkGoal() {
-	if ((ball.getX() < size.goalWidth) && (ball.getY() > (size.height - 2 * size.groundHeight))) {
-		goals[1] += 1;
+	if ((ball.getX() < size.goalWidth) && (ball.getY() > size.height - size.groundHeight - size.goalHeight)) {
+		teamName[1].setText(team2Name + ": " + ++goals[1]);
+		teamName[1].setX(size.width - 20 - teamName[1].getWidth());
+		stage.draw();
 		gameMode = mode.goal;
-		setTimeout(function(){init(); gameMode = mode.continueGame},1500);
+		setTimeout(	function(){	
+						init();
+						gameMode = mode.continueGame}
+					,1500);
 	}
-	if ((ball.getX() > (size.width - size.goalWidth)) && (ball.getY() > (size.height - 2 * size.groundHeight))) {
-		goals[0] += 1;
+	if ((ball.getX() > (size.width - size.goalWidth)) && (ball.getY() > size.height - size.groundHeight - size.goalHeight)) {
+		teamName[0].setText(team1Name + ": " + ++goals[0]);
+		stage.draw();
 		gameMode = mode.goal;
-		setTimeout(function(){init(); gameMode = mode.continueGame},1500);
+		setTimeout(	function(){	
+						init();
+						gameMode = mode.continueGame}
+					,1500);
 	}
 }
 
 //BEGINNING
 $("document").ready( function() {
 	
-	var stage = new Kinetic.Stage({
+	stage = new Kinetic.Stage({
 		container: 'container',
 		x: 0,
 		y: 0,
@@ -334,10 +347,13 @@ $("document").ready( function() {
 	var backgroundLayer = new Kinetic.Layer();
 	var gameLayer = new Kinetic.Layer();
 	var goalLayer = new Kinetic.Layer();
+	var jumboTronLayer = new Kinetic.Layer();
 
 	backgroundLayer.name = "background";
 	gameLayer.name = "game";
 	goalLayer.name = "goals";
+	jumboTronLayer.name = "jumboTron";
+	
 
 	//DRAW BACKGROUND
 	backgroundLayer.add(
@@ -415,7 +431,7 @@ $("document").ready( function() {
 
 
 	//ADD SLIMES
-	slimes = Array();
+	slimes = Array(players);
 	for (var i = 0; i < players; i++) {
 		var slime = new Kinetic.Shape({ drawFunc: drawShapes.drawSlime });
 		if (i === 0) {
@@ -428,15 +444,46 @@ $("document").ready( function() {
 		slime.vx = 0;
 		slime.vy = 0;
 		slime.ball = ball;
-		slimes.push(slime);
+		slimes[i] = slime;
 		gameLayer.add(slime);
 	};
+	
+	//ADD BAR
+	jumboTronLayer.add(
+		new Kinetic.Rect({
+			x: 0,
+			y: 0,
+			width: size.width,
+			height: 75,
+			fill: 'black',
+			opacity: 0.7
+		})
+	);
 
+	teamName = Array(2);
+	for (var i = 0; i < 2; i++) {
+		teamName[i] = new Kinetic.Text({
+			y: 20,
+			fontSize: 25,
+			fontFamily: 'Arial',
+			fill: 'white'
+		});
+		if (i === 0) {
+			teamName[i].setText(team1Name + ": 0");
+			teamName[i].setX(20);
+		} else {
+			teamName[i].setText(team2Name + ": 0");
+			teamName[i].setX(size.width - 20 - teamName[i].getWidth());
+		}
+		jumboTronLayer.add(teamName[i]);
+	}
+	
 	init();
 
 	stage.add(backgroundLayer);
 	stage.add(gameLayer);
 	stage.add(goalLayer);
+	stage.add(jumboTronLayer);
 
 	window.addEventListener('keydown', function(event){keyDown(event.keyCode)}, false);
 	window.addEventListener('keyup', function(event){keyUp(event.keyCode)}, false);	
