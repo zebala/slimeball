@@ -149,7 +149,7 @@ function updateGame(frame) {
 	switch(gameMode) {
 		case mode.menu:
 			if (isHit("space")) {
-				setModeToContinue();
+				setModeToGame();
 			}
 			break;
 		case mode.game:
