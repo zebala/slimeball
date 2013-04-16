@@ -67,16 +67,18 @@ drawShapes = {
 
 //GLOBAL VARIABLES
 var stage;
-var menyLayer;
+var menuLayer;
 var continueLayer;
+var scoreLayer;
+var scoreText;
 
 var players = 2;
 var slimes;
 var ball;
 var goals = [0,0];
 
-var team1Name = "Kasper";
-var team2Name = "Timi";
+var team1Name = "Red";
+var team2Name = "Green";
 var teamName;
 
 var gameMode = mode.menu;
@@ -354,12 +356,14 @@ function setModeToMenu() {
 }
 
 function setModeToGoal() {
+	transitionText();
 	gameMode = mode.goal;
 }
 
 function setModeToContinue() {
 	gameMode = mode.continueGame;
-	init()
+	init();
+	scoreText.setX(-150);
 	menuLayer.setVisible(false);
 	continueLayer.setVisible(true);
 	stage.draw();					// refresh the layers
@@ -370,6 +374,14 @@ function setModeToGame() {
 	menuLayer.setVisible(false);
 	continueLayer.setVisible(false);
 	//stage.draw();
+}
+
+function transitionText() {
+	scoreText.transitionTo({
+    x: size.width / 2 - 50,
+    duration: 1,
+    easing: 'ease-out'
+	});
 }
 
 //BEGINNING
@@ -388,6 +400,7 @@ $("document").ready( function() {
 	var gameLayer = new Kinetic.Layer();
 	var goalLayer = new Kinetic.Layer();
 	var jumboTronLayer = new Kinetic.Layer();
+	scoreLayer = new Kinetic.Layer();
 	menuLayer = new Kinetic.Layer();
 	continueLayer = new Kinetic.Layer();
 
@@ -398,6 +411,7 @@ $("document").ready( function() {
 	jumboTronLayer.setId("jumboTron");
 	menuLayer.setId("menu");
 	continueLayer.setId("continue");
+	scoreLayer.setId("score")
 	*/
 
 	//DRAW BACKGROUND
@@ -522,7 +536,22 @@ $("document").ready( function() {
 		}
 		jumboTronLayer.add(teamName[i]);
 	}
-
+	
+	scoreText = new Kinetic.Text({
+		x: -140,
+		y: 100,
+		fontSize: 50,
+		fontFamily: 'Impact',
+		text: 'Goal!',
+		fill: 'white',
+		shadowColor: 'black',
+        shadowBlur: 0.1,
+        shadowOffset: 7,
+        shadowOpacity: 0.9
+	});
+	
+	scoreLayer.add(scoreText);
+	
 	menuLayer.add( new Kinetic.Text({
 		x: 0,
 		y: size.height / 2 - 40,
@@ -561,6 +590,7 @@ $("document").ready( function() {
 	stage.add(jumboTronLayer);
 	stage.add(menuLayer);
 	stage.add(continueLayer);
+	stage.add(scoreLayer);
 
 	window.addEventListener('keydown', function(event){keyDown(event.keyCode)}, false);
 	window.addEventListener('keyup', function(event){keyUp(event.keyCode)}, false);	
