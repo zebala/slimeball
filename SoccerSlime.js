@@ -363,7 +363,7 @@ function setModeToGoal() {
 function setModeToContinue() {
 	gameMode = mode.continueGame;
 	init();
-	scoreText.setX(-150);
+	scoreText.setY(-scoreText.getTextHeight());
 	menuLayer.setVisible(false);
 	continueLayer.setVisible(true);
 	stage.draw();					// refresh the layers
@@ -378,9 +378,9 @@ function setModeToGame() {
 
 function transitionText() {
 	scoreText.transitionTo({
-    x: size.width / 2 - 50,
-    duration: 1,
-    easing: 'ease-out'
+    y: size.height - size.groundHeight - scoreText.getTextHeight(),
+    duration: 1.2,
+    easing: 'bounce-ease-out'
 	});
 }
 
@@ -538,12 +538,13 @@ $("document").ready( function() {
 	}
 	
 	scoreText = new Kinetic.Text({
-		x: -140,
-		y: 100,
-		fontSize: 50,
+		x: size.width / 2 - 65,
+		y: - 80,
+		fontSize: 75,
 		fontFamily: 'Impact',
 		text: 'Goal!',
 		fill: 'white',
+		align: 'center',
 		shadowColor: 'black',
         shadowBlur: 0.1,
         shadowOffset: 7,
