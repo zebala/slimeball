@@ -356,7 +356,7 @@ function setModeToMenu() {
 }
 
 function setModeToGoal() {
-	transitionText();
+	transitionGoalTextIn();
 	gameMode = mode.goal;
 }
 
@@ -376,11 +376,22 @@ function setModeToGame() {
 	//stage.draw();
 }
 
-function transitionText() {
+function transitionGoalTextIn() {
+	//set position to the left side of the screen
+	scoreText.setX(- scoreText.getWidth());
+	//create transition
 	scoreText.transitionTo({
-    x: size.width / 2 - 50,
-    duration: 1,
-    easing: 'ease-out'
+	    x: size.width / 2 - scoreText.getWidth(),
+	    duration: 1,
+	    easing: 'ease-out',
+	    //transition out
+	    callback: function () {
+	    	scoreText.transitionTo({
+	    		x: size.width,
+	    		duration: 1,
+	    		easing: 'ease-in'
+	    	});
+	    }
 	});
 }
 
@@ -431,47 +442,38 @@ $("document").ready( function() {
 	);
 
 	//DRAW GOALS
-	var goal1 = new Kinetic.Shape({
+	goalLayer.add( new Kinetic.Shape({
 		drawFunc: function(){
 			var context = this.getContext();
 			context.beginPath();
+			//LEFT GOAL
 			//draw vertical lines
-			for (var x = 0.5; x <= size.goalWidth + 0.5; x += 5) {
-				context.moveTo(x, (size.height - 2 * size.goalHeight));
-				context.lineTo(x, (size.height - size.goalHeight));
+			for (var x = 0; x <= size.goalWidth; x += 5) {
+				context.moveTo(x + 0.5, size.height - size.groundHeight - size.goalHeight - 0.5);
+				context.lineTo(x + 0.5, size.height - size.groundHeight);
 			}
 			//draw horizontal lines
-			for (var y = (size.height - 2 * size.goalHeight - 0.5); y <= size.height - size.goalHeight; y += 5) {
-	  			context.moveTo(0.5, y);
-	  			context.lineTo(size.goalWidth + 0.5, y);
+			for (var y = (size.height - size.groundHeight - size.goalHeight); y <= size.height - size.groundHeight; y += 5) {
+	  			context.moveTo(0.5, y - 0.5);
+	  			context.lineTo(size.goalWidth + 0.5, y - 0.5);
+			}
+			
+			//RIGHT GOAL
+			//draw vertical lines
+			for (var x = size.width - size.goalWidth; x <= size.width; x += 5) {
+				context.moveTo(x - 0.5, size.height - size.groundHeight - size.goalHeight - 0.5);
+				context.lineTo(x - 0.5, size.height - size.groundHeight);
+			}
+			//draw horizontal lines
+			for (var y = (size.height - size.groundHeight - size.goalHeight); y <= size.height - size.groundHeight; y += 5) {
+	  			context.moveTo(size.width - size.goalWidth - 0.5, y - 0.5);
+	  			context.lineTo(size.width, y - 0.5);
 			}
 			context.strokeStyle = "white";
 			context.lineWidth = 1;
 			context.stroke();
 		}
-	});
-	var goal2 = new Kinetic.Shape({
-		drawFunc: function(){
-			var context = this.getContext();
-			context.beginPath();
-			//draw vertical lines
-			for (var x = size.width - size.goalWidth - 0.5; x <= size.width + 0.5; x += 5) {
-				context.moveTo(x, (size.height - 2 * size.goalHeight));
-				context.lineTo(x, (size.height - size.goalHeight));
-			}
-			//draw horizontal lines
-			for (var y = (size.height - 2 * size.goalHeight - 0.5); y <= size.height - size.goalHeight; y += 5) {
-	  			context.moveTo(size.width - size.goalWidth - 0.5, y);
-	  			context.lineTo(size.width - + 0.5, y);
-			}
-			context.strokeStyle = "white";
-			context.lineWidth = 1;
-			context.stroke();
-		}
-	});
-	
-	goalLayer.add(goal1);
-	goalLayer.add(goal2);
+	}));
 
 	//ADD BALL
 	ball = new Kinetic.Circle({
@@ -538,7 +540,7 @@ $("document").ready( function() {
 	}
 	
 	scoreText = new Kinetic.Text({
-		x: -140,
+		x: 0,
 		y: 100,
 		fontSize: 50,
 		fontFamily: 'Impact',
@@ -549,6 +551,8 @@ $("document").ready( function() {
         shadowOffset: 7,
         shadowOpacity: 0.9
 	});
+	// position text outside of the screen
+	scoreText.setX(size.width);
 	
 	scoreLayer.add(scoreText);
 	
