@@ -356,14 +356,13 @@ function setModeToMenu() {
 }
 
 function setModeToGoal() {
-	transitionGoalTextIn();
+	scoreTextTransition();
 	gameMode = mode.goal;
 }
 
 function setModeToContinue() {
 	gameMode = mode.continueGame;
 	init();
-	scoreText.setX(-150);
 	menuLayer.setVisible(false);
 	continueLayer.setVisible(true);
 	stage.draw();					// refresh the layers
@@ -376,19 +375,19 @@ function setModeToGame() {
 	//stage.draw();
 }
 
-function transitionGoalTextIn() {
-	//set position to the left side of the screen
-	scoreText.setX(- scoreText.getWidth());
+function scoreTextTransition() {
+	//positin text above the screen
+	scoreText.setPosition(0, -scoreText.getTextHeight());
 	//create transition
 	scoreText.transitionTo({
-	    x: size.width / 2 - scoreText.getWidth(),
-	    duration: 1,
-	    easing: 'ease-out',
-	    //transition out
-	    callback: function () {
+	    y: size.height - size.groundHeight - scoreText.getTextHeight(),
+	    duration: 1.2,
+	    easing: 'bounce-ease-out',
+	    //swipe the scoreText out
+	    callback: function() {
 	    	scoreText.transitionTo({
 	    		x: size.width,
-	    		duration: 1,
+	    		duration: 1.2,
 	    		easing: 'ease-in'
 	    	});
 	    }
@@ -541,18 +540,20 @@ $("document").ready( function() {
 	
 	scoreText = new Kinetic.Text({
 		x: 0,
-		y: 100,
-		fontSize: 50,
+		y: 0,
+		fontSize: 75,
 		fontFamily: 'Impact',
+		width: size.width,
 		text: 'Goal!',
 		fill: 'white',
+		align: 'center',
 		shadowColor: 'black',
         shadowBlur: 0.1,
         shadowOffset: 7,
         shadowOpacity: 0.9
 	});
 	// position text outside of the screen
-	scoreText.setX(size.width);
+	scoreText.setY(- scoreText.getTextHeight());
 	
 	scoreLayer.add(scoreText);
 	
