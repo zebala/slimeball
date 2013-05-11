@@ -103,13 +103,17 @@ function keyDown(key) {
 			keyHitStatus[key] = false;
 		}
 		keyStatus[key] = true;
+		return true;
 	}
+	return false;
 }
 function keyUp(key) {
 	if (checkKey(key)) {
 		keyHitStatus[key] = false;
 		keyStatus[key] = false;
+		return true;
 	}
+	return false;
 }
 function isDown(keyString) {
 	return keyStatus[keyMap[keyString]];
@@ -597,8 +601,39 @@ $("document").ready( function() {
 	stage.add(continueLayer);
 	stage.add(scoreLayer);
 
-	window.addEventListener('keydown', function(event){keyDown(event.keyCode)}, false);
-	window.addEventListener('keyup', function(event){keyUp(event.keyCode)}, false);	
+	//makes container focusable
+	$("#container").attr("tabindex", "0");
+    $("#container").mousedown(	function(){
+    								$(this).focus();
+    								return false;
+    							});
+	//hides outline of focus/selection
+	$("#container").css("outline", "none");
+
+	//add keyListeners
+	$("#container").on( 'keydown', keyDownListener);
+	$("#container").on( 'keyup', keyUpListerner);
+	// $("#container").off({	'keydown': keyDown,
+	// 						'keyup': keyUp
+	// });
+	function keyDownListener(event) {
+		keyDown(event.keyCode);
+		return false;
+		//event.preventDefault();
+	}
+	function keyUpListerner(event) {
+		keyUp(event.which);
+		// event.preventDefault();
+		return false;
+	}
+
+	// window.addEventListener('keydown', keyDownListener, false);
+	// window.addEventListener('keyup', keyUpListerner, false);	
+
+	// $("#container").blur( function(){
+	// 	window.removeEventListener('keydown', keyDownListener, false);
+	// 	window.removeEventListener('keyup', keyUpListerner, false);	
+	// });
 
 	var gameAnimation = new Kinetic.Animation(function(frame) {updateGame(frame)} , gameLayer);
 	gameAnimation.start();
