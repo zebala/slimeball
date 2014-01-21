@@ -66,7 +66,6 @@
 		var players = this.game.slimes;
 		for (var i = 0; i < players.length; i++) {
 			ang = Math.atan2(this.vy, this.vx);
-			v = Math.min( Math.sqrt( Math.pow(this.vx, 2) + Math.pow(this.vy, 2) ), speed.ballMaxSpeed);
 
 			if (Math.sqrt( Math.pow(players[i].obj.getX() - bx, 2) + Math.pow(players[i].obj.getY() - by, 2) ) < size.slimeRadius + size.ballRadius && by < players[i].obj.getY()) {
 				//move this outside of slime
@@ -87,26 +86,29 @@
 				ang2 = Math.atan2(by - players[i].obj.getY(), bx - players[i].obj.getX());
 
 				//length of the velocity components
-				var l1 = Math.cos(ang2) * this.vx + Math.sin(ang2) * this.vy;
-				var l2 = Math.cos(ang2 + Math.PI / 2) * this.vx + Math.sin(ang2 + Math.PI / 2) * this.vy;
+				var l1 = Math.cos(ang2) * (this.vx - players[i].vx) + Math.sin(ang2) * (this.vy - players[i].vy);
+				var l2 = Math.sin(ang2) * (this.vx - players[i].vx) - Math.cos(ang2) * (this.vy - players[i].vy);
+				// velocity components
 				var c1x = Math.cos(ang2) * l1;
 				var c1y = Math.sin(ang2) * l1;
 				var c2x = Math.cos(ang2) * l2;
 				var c2y = Math.sin(ang2) * l2;
-				this.vx = -c1x - c2x;
-				this.vy = -c1y - c2y;
+				//new velocity
+				this.vx = - c1x - c2x;
+				this.vy = - c1y - c2y;
+
 				// this.vx = v * Math.cos(2 * ang2 - ang + Math.PI);
 				// this.vy = v * Math.sin(2 * ang2 - ang +Math.PI) - Math.sin(ang2) * 2 * Math.min(0, players[i].vy);
-				if ((bx > players[i].obj.getX() && players[i].vx > 0) || (bx < players[i].obj.getX() && players[i].vx < 0))
-					this.vx += Math.abs(Math.cos(ang2)) * players[i].vx;
-				if (bx < size.ballRadius) {
-					bx = size.ballRadius + (size.ballRadius - bx) / 2;
-					this.vx = - this.vx / 2;
-				}
-				if (bx > size.width - size.ballRadius) {
-					bx = size.width - size.ballRadius - (size.width - size.ballRadius - bx) / 2;
-					this.vx = - this.vx / 2;
-				}
+				// if ((bx > players[i].obj.getX() && players[i].vx > 0) || (bx < players[i].obj.getX() && players[i].vx < 0))
+				// 	this.vx += Math.abs(Math.cos(ang2)) * players[i].vx;
+				// if (bx < size.ballRadius) {
+				// 	bx = size.ballRadius + (size.ballRadius - bx) / 2;
+				// 	this.vx = - this.vx / 2;
+				// }
+				// if (bx > size.width - size.ballRadius) {
+				// 	bx = size.width - size.ballRadius - (size.width - size.ballRadius - bx) / 2;
+				// 	this.vx = - this.vx / 2;
+				// }
 			}
 		}
 
