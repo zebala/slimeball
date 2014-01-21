@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# build the project
+git checkout master
+make all
+
+# update the js files in the lib folder
+git checkout gh-pages
+git checkout master lib
+
+# copy the game file from build to javascripts
+cp build/soccerslime.min.js javascripts/soccerslime.min.js
